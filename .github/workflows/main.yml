@@ -1,0 +1,35 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    - cron: "0 0 * * *"      # 每天 UTC 时间 0 点执行，即北京时间早上 8 点
+  workflow_dispatch:         # 允许手动触发，方便测试
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # 可选：限制只在 fork 仓库中执行，避免在原仓库也运行
+    if: ${{ github.event.repository.fork }}
+    
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false   # 对私有仓库建议加上
+        
+      - name: Sync upstream changes
+        id: sync
+        # 这里使用第三方 Action，你可以选择下面任意一个
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
+        with:
+          target_sync_branch: main              # 你 fork 仓库的目标分支
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动提供的令牌
+          upstream_sync_repo: https://github.com/openclaw/openclaw     # ⚠️ 替换成上游仓库地址
+          upstream_sync_branch: main            # 上游仓库的同步分支
+          
+      - name: Show sync result
+        if: steps.sync.outputs.has_new_commits == 'true'
+        run: echo "✅ 已同步新提交"
