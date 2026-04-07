@@ -16,7 +16,7 @@ jobs:
     
     steps:
       - name: Checkout target repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           persist-credentials: false   # 对私有仓库建议加上
         
